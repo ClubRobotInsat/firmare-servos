@@ -1,7 +1,6 @@
 //! Blink the LED (connected to Pin PC 13) on and off with 1 second interval.
 
 #![deny(unsafe_code)]  //  Don't allow unsafe code in this file.
-#![deny(warnings)]  //  If the Rust compiler generates a warning, stop the compilation with an error.
 #![no_main]  //  Don't use the Rust standard bootstrap. We will provide our own.
 #![no_std]  //  Don't use the Rust standard library. We are building a binary that can run on its own.
 
@@ -26,7 +25,7 @@ entry!(main);
 fn main() -> ! {
     //  Show "Hello, world!" on the debug console, which is shown in OpenOCD. "mut" means that this object is mutable, i.e. it can change.
     let mut debug_out = hio::hstdout().unwrap();
-    writeln!(debug_out, "Hello, world!").unwrap();
+    //writeln!(debug_out, "Hello, world!").unwrap();
 
     //  Get peripherals (clocks, flash memory, GPIO) for the STM32 Blue Pill microcontroller.
     let bluepill = Peripherals::take().unwrap();
@@ -50,14 +49,14 @@ fn main() -> ! {
     loop {
         //  Output 3.3V on the LED Pin and show a message in OpenOCD console.
         led.set_high();
-        writeln!(debug_out, "LED is ON!").unwrap();
+        //writeln!(debug_out, "LED is ON!").unwrap();
 
         //  Wait 1,000 millisec (1 sec).
         delay.delay_ms(1_000_u16);
 
         //  Output 0V on the LED Pin and show a message in OpenOCD console.
         led.set_low();
-        writeln!(debug_out, "LED is OFF!").unwrap();
+        //writeln!(debug_out, "LED is OFF!").unwrap();
 
         //  Wait 1,000 millisec (1 sec).
         delay.delay_ms(1_000_u16);

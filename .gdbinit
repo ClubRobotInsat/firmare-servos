@@ -49,13 +49,12 @@ file target/thumbv7m-none-eabi/release/stm32-blue-pill-rust
 load
 
 # Set breakpoint at the main() function.
-break stm32_blue_pill_rust::main
-
+break main()
 # Run the program and stop at the main() function.
 continue
 
 # Remove the breakpoint at the main() function.
-clear stm32_blue_pill_rust::main
+clear main()
 
 # Step into the first line of the main() function. Else gdb will complain about "entry macros" file missing.
 step
