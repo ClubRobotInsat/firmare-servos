@@ -14,8 +14,9 @@ repository = "https://github.com/lupyuen/stm32-blue-pill-rust"
 # To optimize the usage of many crates, we should link with Link Time Optimization (LTO). 
 lto = true
 codegen-units = 1
+opt-level = 'z'
 # Enable debugging in release mode.
-debug = true
+# debug = true
 
 [dependencies]
 stm32f103xx = { git = "https://github.com/japaric/stm32f103xx" }
