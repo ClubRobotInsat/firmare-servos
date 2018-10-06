@@ -43,7 +43,7 @@ monitor halt
 monitor sleep 1000
 
 # Specify the target program to be debugged.  Must be specified here (not the command line) because the VSCode debugger will fail without it.
-file target/thumbv7m-none-eabi/release/stm32-blue-pill-rust
+file target/thumbv7m-none-eabi/release/stm32-black-pill-rust
 
 # Load the program into device memory.
 load
