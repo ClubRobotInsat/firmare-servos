@@ -1,22 +1,23 @@
 //! Blink the LED (connected to Pin PC 13) on and off with 1 second interval.
 
-#![deny(unsafe_code)]  //  Don't allow unsafe code in this file.
-#![no_main]  //  Don't use the Rust standard bootstrap. We will provide our own.
-#![no_std]  //  Don't use the Rust standard library. We are building a binary that can run on its own.
+#![deny(unsafe_code)] //  Don't allow unsafe code in this file.
+#![allow(unused_imports)]
+#![no_main] //  Don't use the Rust standard bootstrap. We will provide our own.
+#![no_std] //  Don't use the Rust standard library. We are building a binary that can run on its own.
 
-extern crate cortex_m;  //  Low-level functions for ARM Cortex-M3 processor in STM32 Blue Pill.
-#[macro_use]  //  Import macros from the following crates,
-extern crate cortex_m_rt;  //  Startup and runtime functions for ARM Cortex-M3.
-extern crate cortex_m_semihosting;  //  Debug console functions for ARM Cortex-M3.
-extern crate panic_semihosting;  //  Panic reporting functions, which transmit to the debug console.
-extern crate stm32f103xx_hal as bluepill_hal;  //  Hardware Abstraction Layer (HAL) for STM32 Blue Pill.
+extern crate cortex_m; //  Low-level functions for ARM Cortex-M3 processor in STM32 Blue Pill.
+#[macro_use] //  Import macros from the following crates,
+extern crate cortex_m_rt; //  Startup and runtime functions for ARM Cortex-M3.
+extern crate cortex_m_semihosting; //  Debug console functions for ARM Cortex-M3.
+extern crate panic_semihosting; //  Panic reporting functions, which transmit to the debug console.
+extern crate stm32f103xx_hal as bluepill_hal; //  Hardware Abstraction Layer (HAL) for STM32 Blue Pill.
 
-use core::fmt::Write;  //  Provides writeln() function for debug console output.
-use cortex_m_rt::ExceptionFrame;  //  Stack frame for exception handling.
-use cortex_m_semihosting::hio;  //  For displaying messages on the debug console.
-use bluepill_hal::delay::Delay;  //  Delay timer.
-use bluepill_hal::prelude::*;  //  Define HAL traits.
-use bluepill_hal::stm32f103xx::Peripherals;  //  Clocks, flash memory, GPIO for the STM32 Blue Pill.
+use bluepill_hal::delay::Delay; //  Delay timer.
+use bluepill_hal::prelude::*;   //  Define HAL traits.
+use bluepill_hal::stm32f103xx::Peripherals;
+use core::fmt::Write; //  Provides writeln() function for debug console output.
+use cortex_m_rt::ExceptionFrame; //  Stack frame for exception handling.
+use cortex_m_semihosting::hio; //  For displaying messages on the debug console. //  Clocks, flash memory, GPIO for the STM32 Blue Pill.
 
 //  Blue Pill starts execution at function main().
 entry!(main);

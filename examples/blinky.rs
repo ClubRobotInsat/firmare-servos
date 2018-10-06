@@ -6,7 +6,7 @@
 //// extern crate blue_pill;
 extern crate cortex_m;
 extern crate cortex_m_rtfm as rtfm;
-extern crate stm32f103xx_hal as hal;  //  Hardware Abstraction Layer (HAL) for STM32 Blue Pill.
+extern crate stm32f103xx_hal as hal; //  Hardware Abstraction Layer (HAL) for STM32 Blue Pill.
 
 use blue_pill::led::{self, LD13};
 use cortex_m::peripheral::SystClkSource;
@@ -40,9 +40,7 @@ mod blue_pill {
                     .into_push_pull_output(&mut gpioc.moder, &mut gpioc.otyper);
 
                 Leds {
-                    leds: [
-                        ld13.into(),
-                    ],
+                    leds: [ld13.into()],
                 }
             }
         }

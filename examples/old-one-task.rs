@@ -14,10 +14,10 @@ extern crate cortex_m_rtfm as rtfm;
 extern crate panic_semihosting;
 extern crate stm32f103xx;
 
-use stm32f103xx::GPIOC;
 use cortex_m::peripheral::syst::SystClkSource;
 use cortex_m_rt::ExceptionFrame;
 use rtfm::{app, Threshold};
+use stm32f103xx::GPIOC;
 
 app! {
     device: stm32f103xx,
