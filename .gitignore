@@ -3,3 +3,6 @@
 .gdb_history
 Cargo.lock
 target/
+.idea/
+.idea/workspace.xml
+
