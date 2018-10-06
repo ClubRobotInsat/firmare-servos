@@ -1,13 +1,13 @@
 # This file declares the dependencies for the Rust program.
 [package]
-name = "stm32-blue-pill-rust"
+name = "stm32-black-pill-rust"
 version = "0.3.2"
-authors = ["Lee Lup Yuen <luppy@appkaki.com>"]
-description = "A sample Rust application for STM32 Blue Pill microcontrollers"
+authors = ["Lee Lup Yuen <luppy@appkaki.com>, Paul Florence <perso@florencepaul.com>"]
+description = "A sample Rust application for STM32 Black Pill microcontrollers"
 keywords = ["arm", "cortex-m", "stm32", "bluepill"]
 categories = ["embedded", "no-std"]
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/lupyuen/stm32-blue-pill-rust"
+repository = "https://git.florencepaul.com/gbip/black_pill"
 
 # To minimize the executable size, we should always compile with --release flag. 
 [profile.release]
