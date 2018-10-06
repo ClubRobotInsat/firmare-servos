@@ -8,7 +8,7 @@ extern crate cortex_m_rtfm as rtfm;
 extern crate stm32f103xx;
 
 use rtfm::{app, Resource, Threshold};
-use stm32f103xx::{SPI1, GPIOA};
+use stm32f103xx::{GPIOA, SPI1};
 
 app! {
     device: stm32f103xx,
