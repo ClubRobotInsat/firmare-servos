@@ -20,6 +20,7 @@ debug = true
 [dependencies]
 stm32f103xx = { git = "https://github.com/japaric/stm32f103xx" }
 stm32f103xx-hal = { git = "https://github.com/japaric/stm32f103xx-hal" }
+drs-0x01 = "0.1.7"
 
 [dependencies.cortex-m]
 version = "0.5.0"
