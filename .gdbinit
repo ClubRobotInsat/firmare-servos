@@ -36,28 +36,11 @@ set print asm-demangle on
 # Enable ARM semihosting to show debug console output in OpenOCD console.
 monitor arm semihosting enable
 
-# Reset the device.
-monitor reset init
-monitor sleep 1000
-monitor halt
-monitor sleep 1000
-
 # Specify the target program to be debugged.  Must be specified here (not the command line) because the VSCode debugger will fail without it.
 file target/thumbv7m-none-eabi/release/stm32-black-pill-rust
 
 # Load the program into device memory.
 load
-
-# Set breakpoint at the main() function.
-break main()
-# Run the program and stop at the main() function.
-continue
-
-# Remove the breakpoint at the main() function.
-clear main()
-
-# Step into the first line of the main() function. Else gdb will complain about "entry macros" file missing.
-step
 
 ##########################################################################
 # Optional Commands
