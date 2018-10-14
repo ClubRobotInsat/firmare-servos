@@ -10,8 +10,11 @@ extern crate cortex_m; //  Low-level functions for ARM Cortex-M3 processor in ST
 extern crate cortex_m_rt; //  Startup and runtime functions for ARM Cortex-M3.
 extern crate cortex_m_semihosting; //  Debug console functions for ARM Cortex-M3.
 extern crate drs_0x01;
+extern crate embedded_hal;
 extern crate panic_semihosting; //  Panic reporting functions, which transmit to the debug console.
 extern crate stm32f103xx_hal as bluepill_hal; //  Hardware Abstraction Layer (HAL) for STM32 Blue Pill.
+#[macro_use]
+extern crate nb;
 
 use bluepill_hal::delay::Delay; //  Delay timer.
 use bluepill_hal::prelude::*;   //  Define HAL traits.
@@ -20,12 +23,25 @@ use bluepill_hal::stm32f103xx::Peripherals;
 use bluepill_hal::time::Hertz;
 use core::fmt::Write; //  Provides writeln() function for debug console output.
 use cortex_m_rt::ExceptionFrame; //  Stack frame for exception handling.
-use cortex_m_semihosting::hio; //  For displaying messages on the debug console. //  Clocks, flash memory, GPIO for the STM32 Blue Pill.
+use cortex_m_semihosting::hio;
+use embedded_hal::serial::Write as EWrite; //  For displaying messages on the debug console. //  Clocks, flash memory, GPIO for the STM32 Blue Pill.
 
 use drs_0x01::prelude::*;
 
 //  Black Pill starts execution at function main().
 entry!(main);
+
+fn init_servos(connection: &mut impl EWrite<u8>) {
+    let servo = Servo::new(0xFE);
+    let message1 = servo.enable_torque();
+    let message2 = servo.set_speed(234);
+    for b in message1 {
+        block!(connection.write(b));
+    }
+    for b in message2 {
+        block!(connection.write(b));
+    }
+}
 
 //  Black Pill starts execution here. "-> !" means this function will never return (because of the loop).
 fn main() -> ! {
@@ -70,6 +86,8 @@ fn main() -> ! {
 
     let (mut pc_tx, mut pc_rx) = pc.split();
     let (mut servo_tx, mut servo_rx) = servo.split();
+
+    init_servos(&mut servo_tx);
 
     //  Create a delay timer from the RCC clocks.
     let mut delay = Delay::new(cp.SYST, clocks);

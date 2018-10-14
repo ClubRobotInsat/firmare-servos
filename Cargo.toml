@@ -1,26 +1,16 @@
-# This file declares the dependencies for the Rust program.
 [package]
-name = "stm32-black-pill-rust"
-version = "0.3.2"
 authors = ["Lee Lup Yuen <luppy@appkaki.com>, Paul Florence <perso@florencepaul.com>"]
+categories = ["embedded", "no-std"]
 description = "A sample Rust application for STM32 Black Pill microcontrollers"
 keywords = ["arm", "cortex-m", "stm32", "bluepill"]
-categories = ["embedded", "no-std"]
 license = "MIT OR Apache-2.0"
+name = "stm32-black-pill-rust"
 repository = "https://git.florencepaul.com/gbip/black_pill"
-
-# To minimize the executable size, we should always compile with --release flag. 
-[profile.release]
-# To optimize the usage of many crates, we should link with Link Time Optimization (LTO). 
-lto = true
-codegen-units = 1
-# Enable debugging in release mode.
-debug = true
-
+version = "0.3.2"
 [dependencies]
-stm32f103xx = { git = "https://github.com/japaric/stm32f103xx" }
-stm32f103xx-hal = { git = "https://github.com/japaric/stm32f103xx-hal" }
 drs-0x01 = "0.1.7"
+embedded-hal = "~0.2.1"
+nb = "0.1.1"
 
 [dependencies.cortex-m]
 version = "0.5.0"
@@ -33,3 +23,13 @@ version = "0.3.0"
 
 [dependencies.panic-semihosting]
 version = "0.3.0"
+
+[dependencies.stm32f103xx]
+git = "https://github.com/japaric/stm32f103xx"
+
+[dependencies.stm32f103xx-hal]
+git = "https://github.com/japaric/stm32f103xx-hal"
+[profile.release]
+codegen-units = 1
+debug = true
+lto = true
