@@ -2,6 +2,8 @@
 
 #![deny(unsafe_code)] //  Don't allow unsafe code in this file.
 #![allow(unused_imports)]
+#![allow(unused_variables)]
+#![allow(unused_mut)]
 #![no_main] //  Don't use the Rust standard bootstrap. We will provide our own.
 #![no_std] //  Don't use the Rust standard library. We are building a binary that can run on its own.
 
@@ -15,6 +17,7 @@ extern crate panic_semihosting; //  Panic reporting functions, which transmit to
 extern crate stm32f103xx_hal as bluepill_hal; //  Hardware Abstraction Layer (HAL) for STM32 Blue Pill.
 #[macro_use]
 extern crate nb;
+extern crate librobot;
 
 use bluepill_hal::delay::Delay; //  Delay timer.
 use bluepill_hal::prelude::*;   //  Define HAL traits.
