@@ -11,6 +11,7 @@ version = "0.3.2"
 drs-0x01 = "0.1.7"
 embedded-hal = "~0.2.1"
 nb = "0.1.1"
+librobot = {git = "https://github.com/ClubRobotINSAT/librobot"}
 
 [dependencies.cortex-m]
 version = "0.5.0"
