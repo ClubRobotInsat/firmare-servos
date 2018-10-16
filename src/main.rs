@@ -19,8 +19,8 @@ extern crate stm32f103xx_hal as bluepill_hal; //  Hardware Abstraction Layer (HA
 extern crate nb;
 extern crate librobot;
 
+use cortex_m::asm;
 
-use librobot::structs::Servos2019;
 use bluepill_hal::delay::Delay; //  Delay timer.
 use bluepill_hal::prelude::*;   //  Define HAL traits.
 use bluepill_hal::serial::Serial;
@@ -31,13 +31,20 @@ use cortex_m_rt::ExceptionFrame; //  Stack frame for exception handling.
 use cortex_m_semihosting::hio;
 use embedded_hal::serial::Write as EWrite; //  For displaying messages on the debug console. //  Clocks, flash memory, GPIO for the STM32 Blue Pill.
 
-use drs_0x01::prelude::*;
+use drs_0x01::prelude::Servo as HServo;
+
+use librobot::communication::{Control, Message, Servo, ServoGroup};
 
 //  Black Pill starts execution at function main().
 entry!(main);
 
-fn init_servos(connection: &mut impl EWrite<u8>) {
-    let servo = Servo::new(0xFE);
+fn init_servos(connection: &mut impl EWrite<u8>, delay: &mut Delay) {
+    let servo = HServo::new(0xFE);
+    let message1 = servo.reboot();
+    for b in message1 {
+        block!(connection.write(b));
+    }
+    delay.delay_ms(250u8);
     let message1 = servo.enable_torque();
     for b in message1 {
         block!(connection.write(b));
@@ -88,28 +95,47 @@ fn main() -> ! {
     let (mut pc_tx, mut pc_rx) = pc.split();
     let (mut servo_tx, mut servo_rx) = servo.split();
 
-    init_servos(&mut servo_tx);
-
     //  Create a delay timer from the RCC clocks.
     let mut delay = Delay::new(cp.SYST, clocks);
-    let mut message = Servos
+
+    init_servos(&mut servo_tx, &mut delay);
+
     loop {
-
-        let h1 = block!(servo_rx.read());
+        let h1 = block!(pc_rx.read()).unwrap();
         if h1 == 0xAC {
-            let h2 = block!(servo_rx.read());
+            let h2 = block!(pc_rx.read()).unwrap();
             if h2 == 0xDC {
-                let h3 = block!(servo_rx.read());
+                let h3 = block!(pc_rx.read()).unwrap();
                 if h3 == 0xAB {
-                    let h4 = block!(servo_rx.read());
+                    let h4 = block!(pc_rx.read()).unwrap();
                     if h4 == 0xBB {
-
+                        let size = block!(pc_rx.read()).unwrap();
+                        let id = block!(pc_rx.read()).unwrap();
+                        let nb_servos = block!(pc_rx.read()).unwrap();
+                        let nb_bytes = ServoGroup::get_size_frame(nb_servos);
+                        let mut mess = Message::new();
+                        mess.push(nb_servos);
+                        for _ in 0..(nb_bytes - 1) {
+                            mess.push(block!(pc_rx.read()).unwrap());
+                        }
+                        if let Ok(servos) = ServoGroup::new(mess) {
+                            for servo in servos.servos {
+                                let s = HServo::new(servo.id);
+                                let msg = match servo.control {
+                                    Control::Position(pos) => s.set_position(pos),
+                                    Control::Speed(speed) => s.set_speed(speed),
+                                };
+                                for b in msg {
+                                    block!(servo_tx.write(b)).unwrap();
+                                }
+                            }
+                        } else {
+                            asm::bkpt();
+                        }
                     }
                 }
             }
         }
-
-
     }
 }
 
