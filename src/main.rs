@@ -19,6 +19,8 @@ extern crate stm32f103xx_hal as bluepill_hal; //  Hardware Abstraction Layer (HA
 extern crate nb;
 extern crate librobot;
 
+
+use librobot::structs::Servos2019;
 use bluepill_hal::delay::Delay; //  Delay timer.
 use bluepill_hal::prelude::*;   //  Define HAL traits.
 use bluepill_hal::serial::Serial;
@@ -37,11 +39,7 @@ entry!(main);
 fn init_servos(connection: &mut impl EWrite<u8>) {
     let servo = Servo::new(0xFE);
     let message1 = servo.enable_torque();
-    let message2 = servo.set_speed(234);
     for b in message1 {
-        block!(connection.write(b));
-    }
-    for b in message2 {
         block!(connection.write(b));
     }
 }
@@ -94,7 +92,25 @@ fn main() -> ! {
 
     //  Create a delay timer from the RCC clocks.
     let mut delay = Delay::new(cp.SYST, clocks);
-    loop {}
+    let mut message = Servos
+    loop {
+
+        let h1 = block!(servo_rx.read());
+        if h1 == 0xAC {
+            let h2 = block!(servo_rx.read());
+            if h2 == 0xDC {
+                let h3 = block!(servo_rx.read());
+                if h3 == 0xAB {
+                    let h4 = block!(servo_rx.read());
+                    if h4 == 0xBB {
+
+                    }
+                }
+            }
+        }
+
+
+    }
 }
 
 //  For any hard faults, show a message on the debug console and stop.
