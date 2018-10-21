@@ -33,7 +33,10 @@ use embedded_hal::serial::Write as EWrite; //  For displaying messages on the de
 
 use drs_0x01::prelude::Servo as HServo;
 
-use librobot::communication::{Control, Message, Servo, ServoGroup};
+//use librobot::transmission::
+use librobot::transmission::{
+    frame, frame_reader::FrameReader, Control, Message, Servo, ServoGroup,
+};
 
 //  Black Pill starts execution at function main().
 entry!(main);
@@ -100,26 +103,49 @@ fn main() -> ! {
 
     init_servos(&mut servo_tx, &mut delay);
 
+    let mut reader = FrameReader::new();
     loop {
-        let h1 = block!(pc_rx.read()).unwrap();
+        let byte = block!(pc_rx.read()).unwrap();
+        //asm::bkpt();
+        let mut array = Message::new();
+        array.push(byte);
+        reader.parse(&array);
+        if reader.get_buffer_size() > 0 {
+            let frame = reader.pop_frame().unwrap();
+            if let Ok(servos) = ServoGroup::new(frame.data) {
+                for servo in servos.servos {
+                    asm::bkpt();
+                    let s = HServo::new(servo.id);
+                    let msg = match servo.control {
+                        Control::Position(pos) => s.set_position(pos),
+                        Control::Speed(speed) => s.set_speed(speed),
+                    };
+                    /*for b in msg {
+                        block!(servo_tx.write(b)).unwrap();
+                    }*/
+                }
+            }
+        }
+
+        /*let h1 = block!(pc_rx.read()).unwrap();
         if h1 == 0xAC {
             let h2 = block!(pc_rx.read()).unwrap();
             if h2 == 0xDC {
                 let h3 = block!(pc_rx.read()).unwrap();
                 if h3 == 0xAB {
                     let h4 = block!(pc_rx.read()).unwrap();
-                    if h4 == 0xBB {
-                        let size = block!(pc_rx.read()).unwrap();
+                    if h4 == 0xBA {
+                        let size_low = block!(pc_rx.read()).unwrap();
+                        let size_high = block!(pc_rx.read()).unwrap();
                         let id = block!(pc_rx.read()).unwrap();
-                        let nb_servos = block!(pc_rx.read()).unwrap();
-                        let nb_bytes = ServoGroup::get_size_frame(nb_servos);
                         let mut mess = Message::new();
-                        mess.push(nb_servos);
-                        for _ in 0..(nb_bytes - 1) {
+                        for _ in 0..(size_low - 1) {
                             mess.push(block!(pc_rx.read()).unwrap());
                         }
+                        asm::bkpt();
                         if let Ok(servos) = ServoGroup::new(mess) {
                             for servo in servos.servos {
+                                asm::bkpt();
                                 let s = HServo::new(servo.id);
                                 let msg = match servo.control {
                                     Control::Position(pos) => s.set_position(pos),
@@ -135,7 +161,7 @@ fn main() -> ! {
                     }
                 }
             }
-        }
+        }*/
     }
 }
 
