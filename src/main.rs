@@ -33,7 +33,6 @@ use embedded_hal::serial::Write as EWrite; //  For displaying messages on the de
 
 use drs_0x01::prelude::Servo as HServo;
 
-//use librobot::transmission::
 use librobot::transmission::{
     frame, frame_reader::FrameReader, Control, Message, Servo, ServoGroup,
 };
