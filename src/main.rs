@@ -101,14 +101,13 @@ fn main() -> ! {
     let mut delay = Delay::new(cp.SYST, clocks);
 
     init_servos(&mut servo_tx, &mut delay);
-
+    delay.delay_ms(5000u32);
     let mut reader = FrameReader::new();
     loop {
         let byte = block!(pc_rx.read()).unwrap();
         //asm::bkpt();
-        let mut array = Message::new();
-        array.push(byte);
-        reader.parse(&array);
+        reader = reader.step(byte);
+        /*
         if reader.get_buffer_size() > 0 {
             let frame = reader.pop_frame().unwrap();
             if let Ok(servos) = ServoGroup::new(frame.data) {
@@ -122,10 +121,11 @@ fn main() -> ! {
                     /*for b in msg {
                         block!(servo_tx.write(b)).unwrap();
                     }*/
-                }
-            }
+        }
         }
 
+        }
+         */
         /*let h1 = block!(pc_rx.read()).unwrap();
         if h1 == 0xAC {
             let h2 = block!(pc_rx.read()).unwrap();
