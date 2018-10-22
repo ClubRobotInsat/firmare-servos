@@ -42,13 +42,13 @@ entry!(main);
 
 fn init_servos(connection: &mut impl EWrite<u8>, delay: &mut Delay) {
     let servo = HServo::new(0xFE);
-    let message1 = servo.reboot();
-    for b in message1 {
+    let message = servo.reboot();
+    for b in message {
         block!(connection.write(b));
     }
     delay.delay_ms(250u8);
-    let message1 = servo.enable_torque();
-    for b in message1 {
+    let message = servo.enable_torque();
+    for b in message {
         block!(connection.write(b));
     }
 }
