@@ -33,9 +33,7 @@ use embedded_hal::serial::Write as EWrite; //  For displaying messages on the de
 
 use drs_0x01::prelude::Servo as HServo;
 
-use librobot::transmission::{
-    frame, frame_reader::FrameReader, Control, Message, Servo, ServoGroup,
-};
+use librobot::transmission::{Control, Frame, FrameReader, Message, Servo, ServoGroup};
 
 //  Black Pill starts execution at function main().
 entry!(main);
@@ -168,6 +166,7 @@ fn main() -> ! {
 exception!(HardFault, hard_fault);
 
 fn hard_fault(ef: &ExceptionFrame) -> ! {
+    asm::bkpt();
     panic!("Hard fault: {:#?}", ef);
 }
 
@@ -175,5 +174,6 @@ fn hard_fault(ef: &ExceptionFrame) -> ! {
 exception!(*, default_handler);
 
 fn default_handler(irqn: i16) {
+    asm::bkpt();
     panic!("Unhandled exception (IRQn = {})", irqn);
 }
