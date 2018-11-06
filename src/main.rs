@@ -7,6 +7,7 @@
 #![no_main] //  Don't use the Rust standard bootstrap. We will provide our own.
 #![no_std] //  Don't use the Rust standard library. We are building a binary that can run on its own.
 
+#[macro_use]
 extern crate cortex_m; //  Low-level functions for ARM Cortex-M3 processor in STM32 Blue Pill.
 #[macro_use] //  Import macros from the following crates,
 extern crate cortex_m_rt; //  Startup and runtime functions for ARM Cortex-M3.
@@ -62,6 +63,7 @@ fn main() -> ! {
     let mut flash = bluepill.FLASH.constrain();
     let mut afio = bluepill.AFIO.constrain(&mut rcc.apb2);
     let clocks = rcc.cfgr.freeze(&mut flash.acr);
+    let channels = bluepill.DMA1.split(&mut rcc.ahb);
 
     //  Configuration des GPIOs
     let mut gpiob = bluepill.GPIOB.split(&mut rcc.apb2);
@@ -99,13 +101,24 @@ fn main() -> ! {
     let mut delay = Delay::new(cp.SYST, clocks);
 
     init_servos(&mut servo_tx, &mut delay);
-    delay.delay_ms(5000u32);
+
+    delay.delay_ms(50u32);
+    let mut buf1 = singleton!(: [u8; 16] = [0; 16]).unwrap();
     let mut reader = FrameReader::new();
+
+    let c = channels.5;
+    let mut transfer = pc_rx.read_exact(c, buf1);
     loop {
-        let byte = block!(pc_rx.read()).unwrap();
-        //asm::bkpt();
-        reader = reader.step(byte);
-        /*
+        // Transfert DMA
+        {
+            let (buf, c5, serial_handle) = transfer.wait();
+            let working_buffer = buf.clone();
+            transfer = serial_handle.read_exact(c5, buf);
+            for b in &working_buffer {
+                reader.step(*b);
+            }
+        }
+
         if reader.get_buffer_size() > 0 {
             let frame = reader.pop_frame().unwrap();
             if let Ok(servos) = ServoGroup::new(frame.data) {
@@ -116,14 +129,13 @@ fn main() -> ! {
                         Control::Position(pos) => s.set_position(pos),
                         Control::Speed(speed) => s.set_speed(speed),
                     };
-                    /*for b in msg {
+                    for b in msg {
                         block!(servo_tx.write(b)).unwrap();
-                    }*/
-        }
+                    }
+                }
+            }
         }
 
-        }
-         */
         /*let h1 = block!(pc_rx.read()).unwrap();
         if h1 == 0xAC {
             let h2 = block!(pc_rx.read()).unwrap();
