@@ -33,6 +33,7 @@ use cortex_m_semihosting::hio;
 use embedded_hal::serial::Write as EWrite; //  For displaying messages on the debug console. //  Clocks, flash memory, GPIO for the STM32 Blue Pill.
 
 use drs_0x01::prelude::Servo as HServo;
+use drs_0x01::addr::WritableRamAddr;
 
 use librobot::transmission::{Control, Frame, FrameReader, Message, Servo, ServoGroup};
 
@@ -47,6 +48,11 @@ fn init_servos(connection: &mut impl EWrite<u8>, delay: &mut Delay) {
     }
     delay.delay_ms(250u8);
     let message = servo.enable_torque();
+    for b in message {
+        block!(connection.write(b));
+    }
+    delay.delay_ms(250u8);
+    let message = servo.ram_write(WritableRamAddr::AckPolicy(2));
     for b in message {
         block!(connection.write(b));
     }
