@@ -103,7 +103,7 @@ fn main() -> ! {
     init_servos(&mut servo_tx, &mut delay);
 
     delay.delay_ms(50u32);
-    let mut buf1 = singleton!(: [u8; 16] = [0; 16]).unwrap();
+    let mut buf1 = singleton!(: [u8; 16] = [0; 16]).expect("Failed to initialize buffer.");
     let mut reader = FrameReader::new();
 
     let c = channels.5;
@@ -130,7 +130,7 @@ fn main() -> ! {
                         Control::Speed(speed) => s.set_speed(speed),
                     };
                     for b in msg {
-                        block!(servo_tx.write(b)).unwrap();
+                        block!(servo_tx.write(b)).expect("Fail to communicate with servo");
                     }
                 }
             }
