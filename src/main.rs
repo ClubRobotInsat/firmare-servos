@@ -135,42 +135,6 @@ fn main() -> ! {
                 }
             }
         }
-
-        /*let h1 = block!(pc_rx.read()).unwrap();
-        if h1 == 0xAC {
-            let h2 = block!(pc_rx.read()).unwrap();
-            if h2 == 0xDC {
-                let h3 = block!(pc_rx.read()).unwrap();
-                if h3 == 0xAB {
-                    let h4 = block!(pc_rx.read()).unwrap();
-                    if h4 == 0xBA {
-                        let size_low = block!(pc_rx.read()).unwrap();
-                        let size_high = block!(pc_rx.read()).unwrap();
-                        let id = block!(pc_rx.read()).unwrap();
-                        let mut mess = Message::new();
-                        for _ in 0..(size_low - 1) {
-                            mess.push(block!(pc_rx.read()).unwrap());
-                        }
-                        asm::bkpt();
-                        if let Ok(servos) = ServoGroup::new(mess) {
-                            for servo in servos.servos {
-                                asm::bkpt();
-                                let s = HServo::new(servo.id);
-                                let msg = match servo.control {
-                                    Control::Position(pos) => s.set_position(pos),
-                                    Control::Speed(speed) => s.set_speed(speed),
-                                };
-                                for b in msg {
-                                    block!(servo_tx.write(b)).unwrap();
-                                }
-                            }
-                        } else {
-                            asm::bkpt();
-                        }
-                    }
-                }
-            }
-        }*/
     }
 }
 
