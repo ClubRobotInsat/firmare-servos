@@ -109,7 +109,7 @@ fn main() -> ! {
     let mut spi= Spi::spi1 (
         bluepill.SPI1,
         (pb3,pb4,pb5),
-            &mut afio.mapr,
+        &mut afio.mapr,
         Mode {
             polarity: Polarity::IdleLow,
             phase: Phase::CaptureOnFirstTransition,
