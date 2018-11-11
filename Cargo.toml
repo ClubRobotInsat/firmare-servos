@@ -12,6 +12,7 @@ drs-0x01 = "0.1.7"
 embedded-hal = "~0.2.1"
 nb = "0.1.1"
 librobot = {git = "https://github.com/ClubRobotINSAT/librobot"}
+w5500 = "0.1.5"
 
 [dependencies.cortex-m]
 version = "0.5.0"
@@ -30,6 +31,7 @@ git = "https://github.com/japaric/stm32f103xx"
 
 [dependencies.stm32f103xx-hal]
 git = "https://github.com/japaric/stm32f103xx-hal"
+
 [profile.release]
 codegen-units = 1
 debug = true

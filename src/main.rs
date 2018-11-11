@@ -19,6 +19,7 @@ extern crate stm32f103xx_hal as bluepill_hal; //  Hardware Abstraction Layer (HA
 #[macro_use]
 extern crate nb;
 extern crate librobot;
+extern crate w5500;
 
 use cortex_m::asm;
 
@@ -111,7 +112,7 @@ fn main() -> ! {
 
     delay.delay_ms(50u32);
     let mut buf1 = singleton!(: [u8; 16] = [0; 16]).expect("Failed to initialize buffer.");
-    //let mut reader = FrameReader::new();
+    let mut reader = FrameReader::new();
 
     let c = channels.5;
     let mut transfer = pc_rx.read_exact(c, buf1);
@@ -122,13 +123,13 @@ fn main() -> ! {
             let working_buffer = buf.clone();
             transfer = serial_handle.read_exact(c5, buf);
             for b in &working_buffer {
-                //reader.step(*b);
+                reader.step(*b);
             }
         }
 
-        //if reader.get_buffer_size() > 0 {
-            //let frame = reader.pop_frame().unwrap();
-            /*
+        if reader.get_buffer_size() > 0 {
+            let frame = reader.pop_frame().unwrap();
+
             if let Ok(servos) = ServoGroup::from_message(frame.data) {
                 for servo in servos.servos {
                     asm::bkpt();
@@ -142,8 +143,8 @@ fn main() -> ! {
                     }
                 }
             }
-            */
-        //}
+
+        }
     }
 }
 
