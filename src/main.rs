@@ -26,18 +26,22 @@ use cortex_m::asm;
 use bluepill_hal::delay::Delay; //  Delay timer.
 use bluepill_hal::prelude::*;   //  Define HAL traits.
 use bluepill_hal::serial::Serial;
+use bluepill_hal::spi::{Spi,Mode,Polarity,Phase};
 use bluepill_hal::stm32f103xx::Peripherals;
 use bluepill_hal::time::Hertz;
 use core::fmt::Write; //  Provides writeln() function for debug console output.
 use cortex_m_rt::ExceptionFrame; //  Stack frame for exception handling.
 use cortex_m_semihosting::hio;
 use embedded_hal::serial::Write as EWrite; //  For displaying messages on the debug console. //  Clocks, flash memory, GPIO for the STM32 Blue Pill.
+use embedded_hal::spi::FullDuplex;
 
 use drs_0x01::prelude::Servo as HServo;
 use drs_0x01::addr::WritableRamAddr;
 
 use librobot::transmission::{Frame, FrameReader, Message};
 use librobot::transmission::servo::{Control, Servo, ServoGroup};
+
+use w5500::*;
 
 //  Black Pill starts execution at function main().
 entry!(main);
@@ -60,6 +64,16 @@ fn init_servos(connection: &mut impl EWrite<u8>, delay: &mut Delay) {
     }
 }
 
+fn init_eth<E : core::fmt::Debug>(eth : &mut W5500, spi : &mut FullDuplex<u8, Error = E>) {
+    eth.set_mode(spi,false, false, false, false).unwrap();
+    // using a 'locally administered' MAC address
+    eth.set_mac(spi,&MacAddress::new(0x02, 0x01, 0x02, 0x03, 0x04, 0x05)).unwrap();
+    eth.set_ip(spi,&IpAddress::new(192, 168, 0, 222)).unwrap();
+    eth.set_subnet(spi,&IpAddress::new(255, 255, 255, 0)).unwrap();
+    eth.set_gateway(spi,&IpAddress::new(192, 168, 0, 1)).unwrap();
+
+}
+
 //  Black Pill starts execution here. "-> !" means this function will never return (because of the loop).
 fn main() -> ! {
     //  Get peripherals (clocks, flash memory, GPIO) for the STM32 Black Pill microcontroller.
@@ -80,10 +94,36 @@ fn main() -> ! {
     // Configuration des PINS
     let pb6 = gpiob.pb6.into_alternate_push_pull(&mut gpiob.crl);
     let pb7 = gpiob.pb7.into_floating_input(&mut gpiob.crl);
+
+    let pb3 = gpiob.pb3.into_alternate_push_pull(&mut gpiob.crl);
+    let pb5 = gpiob.pb5.into_alternate_push_pull(&mut gpiob.crl);
+    let pb4 = gpiob.pb4;
+    let mut pb8 = gpiob.pb8.into_push_pull_output(&mut gpiob.crh);
+
+
     let pa2 = gpioa.pa2.into_alternate_push_pull(&mut gpioa.crl);
     let pa3 = gpioa.pa3.into_floating_input(&mut gpioa.crl);
 
     // Configuration des USART
+
+    let mut spi= Spi::spi1 (
+        bluepill.SPI1,
+        (pb3,pb4,pb5),
+            &mut afio.mapr,
+        Mode {
+            polarity: Polarity::IdleLow,
+            phase: Phase::CaptureOnFirstTransition,
+        },
+        1.mhz(),
+        clocks,
+        &mut rcc.apb2
+    );
+
+    let mut eth = W5500::new(&mut spi, &mut pb8);
+    init_eth(&mut eth, &mut spi);
+    let socket = Socket::Socket1;
+    eth.listen_udp(&mut spi,socket, 51).unwrap();
+
 
     let pc = Serial::usart1(
         bluepill.USART1,
@@ -111,18 +151,14 @@ fn main() -> ! {
     init_servos(&mut servo_tx, &mut delay);
 
     delay.delay_ms(50u32);
-    let mut buf1 = singleton!(: [u8; 16] = [0; 16]).expect("Failed to initialize buffer.");
+
+    let mut buffer = [0; 2048];
     let mut reader = FrameReader::new();
 
-    let c = channels.5;
-    let mut transfer = pc_rx.read_exact(c, buf1);
     loop {
         // Transfert DMA
-        {
-            let (buf, c5, serial_handle) = transfer.wait();
-            let working_buffer = buf.clone();
-            transfer = serial_handle.read_exact(c5, buf);
-            for b in &working_buffer {
+        if let Some((ip, port, size)) = eth.try_receive_udp(&mut spi,socket, &mut buffer).unwrap() {
+            for b in &buffer[0..size] {
                 reader.step(*b);
             }
         }
