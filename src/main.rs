@@ -35,7 +35,8 @@ use embedded_hal::serial::Write as EWrite; //  For displaying messages on the de
 use drs_0x01::prelude::Servo as HServo;
 use drs_0x01::addr::WritableRamAddr;
 
-use librobot::transmission::{Control, Frame, FrameReader, Message, Servo, ServoGroup};
+use librobot::transmission::{Frame, FrameReader, Message};
+use librobot::transmission::servo::{Control, Servo, ServoGroup};
 
 //  Black Pill starts execution at function main().
 entry!(main);
@@ -110,7 +111,7 @@ fn main() -> ! {
 
     delay.delay_ms(50u32);
     let mut buf1 = singleton!(: [u8; 16] = [0; 16]).expect("Failed to initialize buffer.");
-    let mut reader = FrameReader::new();
+    //let mut reader = FrameReader::new();
 
     let c = channels.5;
     let mut transfer = pc_rx.read_exact(c, buf1);
@@ -121,13 +122,14 @@ fn main() -> ! {
             let working_buffer = buf.clone();
             transfer = serial_handle.read_exact(c5, buf);
             for b in &working_buffer {
-                reader.step(*b);
+                //reader.step(*b);
             }
         }
 
-        if reader.get_buffer_size() > 0 {
-            let frame = reader.pop_frame().unwrap();
-            if let Ok(servos) = ServoGroup::new(frame.data) {
+        //if reader.get_buffer_size() > 0 {
+            //let frame = reader.pop_frame().unwrap();
+            /*
+            if let Ok(servos) = ServoGroup::from_message(frame.data) {
                 for servo in servos.servos {
                     asm::bkpt();
                     let s = HServo::new(servo.id);
@@ -140,7 +142,8 @@ fn main() -> ! {
                     }
                 }
             }
-        }
+            */
+        //}
     }
 }
 
