@@ -43,6 +43,8 @@ use librobot::transmission::servo::{Control, Servo, ServoGroup};
 
 use w5500::*;
 
+const SOCKET_UDP: Socket = Socket::Socket0;
+
 //  Black Pill starts execution at function main().
 entry!(main);
 
@@ -65,12 +67,15 @@ fn init_servos(connection: &mut impl EWrite<u8>, delay: &mut Delay) {
 }
 
 fn init_eth<E : core::fmt::Debug>(eth : &mut W5500, spi : &mut FullDuplex<u8, Error = E>) {
-    eth.set_mode(spi,false, false, false, false).unwrap();
+    //eth.set_mode(spi,false, false, false, true).unwrap();
     // using a 'locally administered' MAC address
+    eth.init(spi).expect("Failed to initialize w5500");
+    eth.set_mode(spi,false,false,false,true).unwrap();
     eth.set_mac(spi,&MacAddress::new(0x02, 0x01, 0x02, 0x03, 0x04, 0x05)).unwrap();
     eth.set_ip(spi,&IpAddress::new(192, 168, 0, 222)).unwrap();
     eth.set_subnet(spi,&IpAddress::new(255, 255, 255, 0)).unwrap();
-    eth.set_gateway(spi,&IpAddress::new(192, 168, 0, 1)).unwrap();
+    eth.set_gateway(spi,&IpAddress::new(192, 168, 0, 254)).unwrap();
+    eth.reset_interrupt(spi, SOCKET_UDP, Interrupt::SendOk).expect("Failed ot reset interrupts for W5500");
 
 }
 
@@ -99,7 +104,12 @@ fn main() -> ! {
     let pb5 = gpiob.pb5.into_alternate_push_pull(&mut gpiob.crl);
     let pb4 = gpiob.pb4;
     let mut pb8 = gpiob.pb8.into_push_pull_output(&mut gpiob.crh);
+    pb8.set_low();
 
+
+    let sclk = gpioa.pa5.into_alternate_push_pull(&mut gpioa.crl);
+    let miso = gpioa.pa6.into_floating_input(&mut gpioa.crl);
+    let mosi = gpioa.pa7.into_alternate_push_pull(&mut gpioa.crl);
 
     let pa2 = gpioa.pa2.into_alternate_push_pull(&mut gpioa.crl);
     let pa3 = gpioa.pa3.into_floating_input(&mut gpioa.crl);
@@ -108,7 +118,7 @@ fn main() -> ! {
 
     let mut spi= Spi::spi1 (
         bluepill.SPI1,
-        (pb3,pb4,pb5),
+        (sclk,miso,mosi),
         &mut afio.mapr,
         Mode {
             polarity: Polarity::IdleLow,
@@ -120,9 +130,8 @@ fn main() -> ! {
     );
 
     let mut eth = W5500::new(&mut spi, &mut pb8);
-    init_eth(&mut eth, &mut spi);
-    let socket = Socket::Socket1;
-    eth.listen_udp(&mut spi,socket, 51).unwrap();
+    init_eth(&mut eth, &mut spi);;
+    eth.listen_udp(&mut spi,SOCKET_UDP, 51).unwrap();
 
 
     let pc = Serial::usart1(
@@ -157,7 +166,7 @@ fn main() -> ! {
 
     loop {
         // Transfert DMA
-        if let Some((ip, port, size)) = eth.try_receive_udp(&mut spi,socket, &mut buffer).unwrap() {
+        if let Some((ip, port, size)) = eth.try_receive_udp(&mut spi,SOCKET_UDP, &mut buffer).unwrap() {
             for b in &buffer[0..size] {
                 reader.step(*b);
             }
