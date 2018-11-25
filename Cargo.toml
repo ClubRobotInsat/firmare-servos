@@ -15,7 +15,7 @@ embedded-hal = "0.2"
 nb = "0.1"
 numtoa = "0.2"
 w5500 = "0.1.5"
-drs-0x01 = "0.2"
+drs-0x01 = {git = "https://github.com/gbip/drs_0x01_driver"}
 
 # Utilitaries dependencies
 arrayvec = {version="0.4", default-features=false}
