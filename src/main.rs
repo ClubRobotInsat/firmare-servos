@@ -11,6 +11,7 @@ extern crate embedded_hal;
 extern crate librobot;
 #[macro_use]
 extern crate nb;
+extern crate heapless;
 extern crate numtoa;
 extern crate panic_semihosting; //  Panic reporting functions, which transmit to the debug console.
 extern crate stm32f103xx;
@@ -19,10 +20,12 @@ extern crate w5500;
 
 mod robot;
 
+use core::fmt::Write;
 // ------ Cortex | F103 imports
 use cortex_m::asm;
 use cortex_m::Peripherals as CortexPeripherals;
 use cortex_m_rt::ExceptionFrame;
+use cortex_m_semihosting::hio;
 use f103::Peripherals;
 use f103_hal::delay::Delay;
 use f103_hal::prelude::*;
@@ -33,12 +36,13 @@ use embedded_hal::serial::Write as EWrite;
 use embedded_hal::spi::FullDuplex;
 
 // ------ Library imports
+use heapless::consts::U256;
 use w5500::*;
 
 use drs_0x01::addr::WritableRamAddr;
 use drs_0x01::Servo as HServo;
 
-use librobot::transmission::servo::{Control, ServoGroup};
+use librobot::transmission::servo::{Control, Servo};
 use librobot::transmission::{Frame, Message, MessageKind};
 
 // ------ Local imports
@@ -87,7 +91,7 @@ fn init_eth<E: core::fmt::Debug>(eth: &mut W5500, spi: &mut FullDuplex<u8, Error
 fn main() -> ! {
     let chip = Peripherals::take().unwrap();
     let cortex = CortexPeripherals::take().unwrap();
-
+    let mut debug_out = hio::hstdout().unwrap();
     let mut robot = init_peripherals(chip, cortex);
     let mut eth = W5500::new(&mut robot.spi_eth, &mut robot.pb8);
     init_eth(&mut eth, &mut robot.spi_eth);
@@ -102,27 +106,22 @@ fn main() -> ! {
             .try_receive_udp(&mut robot.spi_eth, SOCKET_UDP, &mut buffer)
             .unwrap()
         {
-            if let Ok(kind) = MessageKind::from_u8(buffer[0]) {
-                let mut data = Message::new();
-                for b in &buffer[1..size] {
-                    data.push(*b);
-                }
-                let frame = Frame::new(kind, data);
-                if let Ok(servos) = ServoGroup::from_message(frame.data) {
-                    for servo in servos.servos {
-                        let s = HServo::new(servo.id);
-                        let msg = match servo.control {
-                            Control::Position(pos) => s.set_position(pos),
-                            Control::Speed(speed) => s.set_speed(speed),
-                        };
-                        for b in msg {
-                            block!(robot.servo_tx.write(b)).expect(
-                                "Fail to communicate with \
-                                 servo",
-                            );
-                        }
+            match Servo::from_json_slice(&buffer[0..size]) {
+                Ok(servo) => {
+                    //write!(debug_out, "{:?}", servo.to_string::<U256>().unwrap()).unwrap();
+                    let s = HServo::new(servo.id);
+                    let msg = match servo.control {
+                        Control::Position => s.set_position(servo.data),
+                        Control::Speed => s.set_speed(servo.data),
+                    };
+                    for b in msg {
+                        block!(robot.servo_tx.write(b)).expect(
+                            "Fail to communicate with \
+                             servo",
+                        );
                     }
                 }
+                Err(e) => panic!("{:#?}", e),
             }
         }
     }
