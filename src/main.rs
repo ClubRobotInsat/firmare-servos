@@ -42,6 +42,8 @@ use w5500::*;
 use drs_0x01::addr::WritableRamAddr;
 use drs_0x01::Servo as HServo;
 
+use drs_0x01::*;
+
 use librobot::transmission::servo::{Control, Servo};
 use librobot::transmission::{Frame, Message, MessageKind};
 
@@ -91,7 +93,7 @@ fn init_eth<E: core::fmt::Debug>(eth: &mut W5500, spi: &mut FullDuplex<u8, Error
 fn main() -> ! {
     let chip = Peripherals::take().unwrap();
     let cortex = CortexPeripherals::take().unwrap();
-    let mut debug_out = hio::hstdout().unwrap();
+    let mut _debug_out = hio::hstdout().unwrap();
     let mut robot = init_peripherals(chip, cortex);
     let mut eth = W5500::new(&mut robot.spi_eth, &mut robot.pb8);
     init_eth(&mut eth, &mut robot.spi_eth);
@@ -112,7 +114,7 @@ fn main() -> ! {
                     let s = HServo::new(servo.id);
                     let msg = match servo.control {
                         Control::Position => s.set_position(servo.data),
-                        Control::Speed => s.set_speed(servo.data),
+                        Control::Speed => s.set_speed(servo.data, Rotation::Clockwise),
                     };
                     for b in msg {
                         block!(robot.servo_tx.write(b)).expect(
