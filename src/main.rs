@@ -20,7 +20,6 @@ extern crate w5500;
 
 mod robot;
 
-use core::fmt::Write;
 // ------ Cortex | F103 imports
 use cortex_m::asm;
 use cortex_m::Peripherals as CortexPeripherals;

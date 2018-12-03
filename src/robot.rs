@@ -7,7 +7,7 @@ use f103_hal::prelude::*;
 use f103_hal::serial::{Rx, Serial, Tx};
 use f103_hal::spi::*;
 
-use f103::{SPI1, USART2};
+use f103::{SPI1, USART3};
 
 type SpiPins = (
     PA5<Alternate<PushPull>>,
@@ -26,7 +26,7 @@ pub struct Robot<T, K, P> {
 pub fn init_peripherals(
     chip: Peripherals,
     cortex: CortexPeripherals,
-) -> Robot<USART2, SPI1, SpiPins> {
+) -> Robot<USART3, SPI1, SpiPins> {
     //  Get the clocks from the STM32 Reset and Clock Control (RCC) and freeze the Flash Access Control Register (ACR).
     let mut rcc = chip.RCC.constrain();
     let mut flash = chip.FLASH.constrain();
@@ -47,8 +47,8 @@ pub fn init_peripherals(
     let miso = gpioa.pa6.into_floating_input(&mut gpioa.crl);
     let mosi = gpioa.pa7.into_alternate_push_pull(&mut gpioa.crl);
 
-    let pa2 = gpioa.pa2.into_alternate_push_pull(&mut gpioa.crl);
-    let pa3 = gpioa.pa3.into_floating_input(&mut gpioa.crl);
+    let pb10 = gpiob.pb10.into_alternate_push_pull(&mut gpiob.crh);
+    let pb11 = gpiob.pb11.into_floating_input(&mut gpiob.crh);
 
     // Configuration des USART
 
@@ -65,9 +65,9 @@ pub fn init_peripherals(
         &mut rcc.apb2,
     );
 
-    let servo = Serial::usart2(
-        chip.USART2,
-        (pa2, pa3),
+    let servo = Serial::usart3(
+        chip.USART3,
+        (pb10, pb11),
         &mut afio.mapr,
         115_200.bps(),
         clocks,
