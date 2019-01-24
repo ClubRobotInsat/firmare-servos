@@ -41,10 +41,7 @@ use w5500::*;
 use drs_0x01::addr::WritableRamAddr;
 use drs_0x01::Servo as HServo;
 
-use drs_0x01::*;
-
 use librobot::transmission::servo::{Control, Servo};
-use librobot::transmission::{Frame, Message, MessageKind};
 
 // ------ Local imports
 use robot::init_peripherals;
@@ -94,7 +91,7 @@ fn main() -> ! {
     let cortex = CortexPeripherals::take().unwrap();
     let mut _debug_out = hio::hstdout().unwrap();
     let mut robot = init_peripherals(chip, cortex);
-    let mut eth = W5500::new(&mut robot.spi_eth, &mut robot.pb8);
+    let mut eth = W5500::new(&mut robot.spi_eth, &mut robot.cs);
     init_eth(&mut eth, &mut robot.spi_eth);
     init_servos(&mut robot.servo_tx, &mut robot.delay);
 
