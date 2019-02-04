@@ -26,3 +26,4 @@ librobot = {git="https://github.com/ClubRobotInsat/librobot"}
 codegen-units = 1
 debug = true
 lto = true
+incremental = false
