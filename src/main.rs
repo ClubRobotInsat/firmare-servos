@@ -14,7 +14,6 @@ extern crate nb;
 extern crate heapless;
 extern crate numtoa;
 extern crate panic_semihosting; //  Panic reporting functions, which transmit to the debug console.
-extern crate stm32f103xx;
 extern crate stm32f103xx_hal as f103_hal; //  Hardware Abstraction Layer (HAL) for STM32 Blue Pill.
 extern crate w5500;
 
@@ -96,13 +95,19 @@ fn main() -> ! {
     let mut robot = init_peripherals(chip, cortex);
     let mut eth = W5500::new(&mut robot.spi_eth, &mut robot.pb8);
     init_eth(&mut eth, &mut robot.spi_eth);
-    init_servos(&mut robot.servo_tx, &mut robot.delay);
+    //init_servos(&mut robot.servo_tx, &mut robot.delay);
 
     robot.delay.delay_ms(50u32);
 
     let mut buffer = [0; 2048];
 
     loop {
+        robot.delay.delay_ms(50u32);
+        robot.led.set_high();
+        robot.delay.delay_ms(50u32);
+        robot.led.set_low();
+
+        /*
         if let Some((_, _, size)) = eth
             .try_receive_udp(&mut robot.spi_eth, SOCKET_UDP, &mut buffer)
             .unwrap()
@@ -125,6 +130,7 @@ fn main() -> ! {
                 Err(e) => panic!("{:#?}", e),
             }
         }
+        */
     }
 }
 
