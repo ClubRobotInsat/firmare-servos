@@ -30,6 +30,10 @@ set print object off
 set debug parser off
 set debug remote 0
 
+break DefaultHandler
+break UserHardFault
+break rust_begin_unwind
+
 # Print demangled symbols by default.
 set print asm-demangle on
 
