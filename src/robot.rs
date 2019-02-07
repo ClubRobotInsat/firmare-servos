@@ -1,13 +1,13 @@
-use f103::Peripherals;
-use CortexPeripherals;
+use crate::f103::Peripherals;
+use crate::CortexPeripherals;
 
-use f103_hal::delay::Delay;
-use f103_hal::gpio::{gpiob::*, gpioc::*, Alternate, Floating, Input, Output, PushPull};
-use f103_hal::prelude::*;
-use f103_hal::serial::{Rx, Serial, Tx};
-use f103_hal::spi::*;
+use crate::f103_hal::delay::Delay;
+use crate::f103_hal::gpio::{gpiob::*, gpioc::*, Alternate, Floating, Input, Output, PushPull};
+use crate::f103_hal::prelude::*;
+use crate::f103_hal::serial::{Rx, Serial, Tx};
+use crate::f103_hal::spi::*;
 
-use f103::{SPI1, USART3};
+use crate::f103::{SPI1, USART3};
 
 type SpiPins = (
     PB3<Alternate<PushPull>>,

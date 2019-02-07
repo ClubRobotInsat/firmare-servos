@@ -24,10 +24,10 @@ use cortex_m::asm;
 use cortex_m::Peripherals as CortexPeripherals;
 use cortex_m_rt::ExceptionFrame;
 use cortex_m_semihosting::hio;
-use f103::Peripherals;
-use f103_hal::delay::Delay;
-use f103_hal::prelude::*;
-use f103_hal::stm32f103xx as f103;
+use crate::f103::Peripherals;
+use crate::f103_hal::delay::Delay;
+use crate::f103_hal::prelude::*;
+use crate::f103_hal::stm32f103xx as f103;
 
 // ------ Embedded HAL imports
 use embedded_hal::serial::Write as EWrite;
@@ -43,7 +43,7 @@ use drs_0x01::Servo as HServo;
 use librobot::transmission::servo::{Control, Servo};
 
 // ------ Local imports
-use robot::init_peripherals;
+use crate::robot::init_peripherals;
 
 const SOCKET_UDP: Socket = Socket::Socket0;
 
@@ -96,7 +96,7 @@ fn main() -> ! {
 
     robot.delay.delay_ms(50u32);
 
-    let mut buffer = [0; 2048];
+    let _buffer = [0; 2048];
 
     loop {
         /*
