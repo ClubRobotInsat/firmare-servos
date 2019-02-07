@@ -40,10 +40,7 @@ use w5500::*;
 use drs_0x01::addr::WritableRamAddr;
 use drs_0x01::Servo as HServo;
 
-use drs_0x01::*;
-
 use librobot::transmission::servo::{Control, Servo};
-use librobot::transmission::{Frame, Message, MessageKind};
 
 // ------ Local imports
 use robot::init_peripherals;
@@ -85,7 +82,7 @@ fn init_eth<E: core::fmt::Debug>(eth: &mut W5500, spi: &mut FullDuplex<u8, Error
     eth.reset_interrupt(spi, SOCKET_UDP, Interrupt::Received)
         .expect("Failed ot reset interrupts for W5500");
     eth.listen_udp(spi, SOCKET_UDP, 51)
-        .expect("Faild to listen to port 51");
+        .expect("Failed to listen to port 51");
 }
 
 fn main() -> ! {
@@ -93,7 +90,7 @@ fn main() -> ! {
     let cortex = CortexPeripherals::take().unwrap();
     let mut _debug_out = hio::hstdout().unwrap();
     let mut robot = init_peripherals(chip, cortex);
-    let mut eth = W5500::new(&mut robot.spi_eth, &mut robot.pb8);
+    let mut eth = W5500::new(&mut robot.spi_eth, &mut robot.cs);
     init_eth(&mut eth, &mut robot.spi_eth);
     //init_servos(&mut robot.servo_tx, &mut robot.delay);
 
@@ -102,23 +99,29 @@ fn main() -> ! {
     let mut buffer = [0; 2048];
 
     loop {
-        robot.delay.delay_ms(50u32);
-        robot.led.set_high();
-        robot.delay.delay_ms(50u32);
-        robot.led.set_low();
-
         /*
         if let Some((_, _, size)) = eth
             .try_receive_udp(&mut robot.spi_eth, SOCKET_UDP, &mut buffer)
             .unwrap()
         {
-            match Servo::from_json_slice(&buffer[0..size]) {
+            let _id = buffer[0];
+            match Servo::from_json_slice(&buffer[1..size]) {
                 Ok(servo) => {
                     //write!(debug_out, "{:?}", servo.to_string::<U256>().unwrap()).unwrap();
                     let s = HServo::new(servo.id);
                     let msg = match servo.control {
                         Control::Position => s.set_position(servo.data),
-                        Control::Speed => s.set_speed(servo.data, Rotation::Clockwise),
+                        Control::Speed => s.set_speed(
+                            servo.data,
+                            match servo.rotation {
+                                librobot::servo::Rotation::Clockwise => {
+                                    drs_0x01::Rotation::Clockwise
+                                }
+                                librobot::servo::Rotation::CounterClockwise => {
+                                    drs_0x01::Rotation::CounterClockwise
+                                }
+                            },
+                        ),
                     };
                     for b in msg {
                         block!(robot.servo_tx.write(b)).expect(

@@ -2,7 +2,7 @@ use f103::Peripherals;
 use CortexPeripherals;
 
 use f103_hal::delay::Delay;
-use f103_hal::gpio::{gpioa::*, gpiob::*, Alternate, Floating, Input, Output, PushPull};
+use f103_hal::gpio::{gpiob::*, gpioc::*, Alternate, Floating, Input, Output, PushPull};
 use f103_hal::prelude::*;
 use f103_hal::serial::{Rx, Serial, Tx};
 use f103_hal::spi::*;
@@ -10,9 +10,9 @@ use f103_hal::spi::*;
 use f103::{SPI1, USART3};
 
 type SpiPins = (
-    PA5<Alternate<PushPull>>,
-    PA6<Input<Floating>>,
-    PA7<Alternate<PushPull>>,
+    PB3<Alternate<PushPull>>,
+    PB4<Input<Floating>>,
+    PB5<Alternate<PushPull>>,
 );
 
 pub struct Robot<T, K, P> {
@@ -20,7 +20,9 @@ pub struct Robot<T, K, P> {
     pub servo_tx: Tx<T>,
     pub servo_rx: Rx<T>,
     pub delay: Delay,
-    pub pb8: PB8<Output<PushPull>>,
+    pub cs: PB13<Output<PushPull>>,
+    pub led_hardfault: PB7<Alternate<PushPull>>,
+    pub led_feedback: PC14<Alternate<PushPull>>,
 }
 
 pub fn init_peripherals(
@@ -36,19 +38,25 @@ pub fn init_peripherals(
 
     //  Configuration des GPIOs
     let mut gpiob = chip.GPIOB.split(&mut rcc.apb2);
-    let mut gpioa = chip.GPIOA.split(&mut rcc.apb2);
+    let mut gpioc = chip.GPIOC.split(&mut rcc.apb2);
 
     // Configuration des PINS
 
-    let mut pb8 = gpiob.pb8.into_push_pull_output(&mut gpiob.crh);
-    pb8.set_low();
+    // Slave select, on le fixe à un état bas (on n'en a pas besoin, une seule communication)
+    let mut cs = gpiob.pb13.into_push_pull_output(&mut gpiob.crh);
+    cs.set_low();
 
-    let sclk = gpioa.pa5.into_alternate_push_pull(&mut gpioa.crl);
-    let miso = gpioa.pa6.into_floating_input(&mut gpioa.crl);
-    let mosi = gpioa.pa7.into_alternate_push_pull(&mut gpioa.crl);
+    let sclk = gpiob.pb3.into_alternate_push_pull(&mut gpiob.crl);
+    let miso = gpiob.pb4.into_floating_input(&mut gpiob.crl);
+    let mosi = gpiob.pb5.into_alternate_push_pull(&mut gpiob.crl);
 
     let pb10 = gpiob.pb10.into_alternate_push_pull(&mut gpiob.crh);
     let pb11 = gpiob.pb11.into_floating_input(&mut gpiob.crh);
+
+    let mut led_hardfault = gpiob.pb7.into_alternate_push_pull(&mut gpiob.crl);
+    let mut led_feedback = gpioc.pc14.into_alternate_push_pull(&mut gpioc.crh);
+    led_hardfault.set_low();
+    led_feedback.set_low();
 
     // Configuration des USART
 
@@ -84,6 +92,8 @@ pub fn init_peripherals(
         servo_tx,
         servo_rx,
         delay,
-        pb8,
+        cs,
+        led_hardfault,
+        led_feedback,
     }
 }
