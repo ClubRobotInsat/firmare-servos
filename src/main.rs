@@ -1,6 +1,7 @@
 #![no_main] //  Don't use the Rust standard bootstrap. We will provide our own.
 #![no_std] //  Don't use the Rust standard library. We are building a binary that can run on its own.
 
+#[macro_use]
 extern crate cortex_m; //  Low-level functions for ARM Cortex-M3 processor in STM32 Blue Pill.
 #[macro_use(entry, exception)] //  Import macros from the following crates,
 extern crate cortex_m_rt; //  Startup and runtime functions for ARM Cortex-M3.
@@ -14,7 +15,7 @@ extern crate nb;
 extern crate heapless;
 extern crate numtoa;
 extern crate panic_semihosting; //  Panic reporting functions, which transmit to the debug console.
-extern crate stm32f103xx_hal as f103_hal; //  Hardware Abstraction Layer (HAL) for STM32 Blue Pill.
+extern crate stm32f1xx_hal as f103_hal; //  Hardware Abstraction Layer (HAL) for STM32 Blue Pill.
 extern crate w5500;
 
 mod robot;
@@ -27,7 +28,7 @@ use cortex_m_semihosting::hio;
 use crate::f103::Peripherals;
 use crate::f103_hal::delay::Delay;
 use crate::f103_hal::prelude::*;
-use crate::f103_hal::stm32f103xx as f103;
+use crate::f103_hal::stm32 as f103;
 
 // ------ Embedded HAL imports
 use embedded_hal::serial::Write as EWrite;
@@ -46,8 +47,6 @@ use librobot::transmission::servo::{Control, Servo};
 use crate::robot::init_peripherals;
 
 const SOCKET_UDP: Socket = Socket::Socket0;
-
-entry!(main);
 
 fn init_servos(connection: &mut impl EWrite<u8>, delay: &mut Delay) {
     let servo = HServo::new(0xFE);
@@ -85,6 +84,8 @@ fn init_eth<E: core::fmt::Debug>(eth: &mut W5500, spi: &mut FullDuplex<u8, Error
         .expect("Failed to listen to port 51");
 }
 
+
+#[entry]
 fn main() -> ! {
     let chip = Peripherals::take().unwrap();
     let cortex = CortexPeripherals::take().unwrap();
@@ -138,17 +139,15 @@ fn main() -> ! {
 }
 
 //  For any hard faults, show a message on the debug console and stop.
-exception!(HardFault, hard_fault);
-
-fn hard_fault(ef: &ExceptionFrame) -> ! {
+#[exception]
+fn HardFault(ef: &ExceptionFrame) -> ! {
     asm::bkpt();
     panic!("Hard fault: {:#?}", ef);
 }
 
 //  For any unhandled interrupts, show a message on the debug console and stop.
-exception!(*, default_handler);
-
-fn default_handler(irqn: i16) {
+#[exception]
+fn DefaultHandler(irqn: i16) {
     asm::bkpt();
     panic!("Unhandled exception (IRQn = {})", irqn);
 }

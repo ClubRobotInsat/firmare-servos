@@ -34,7 +34,7 @@ pub fn init_peripherals(
     let mut flash = chip.FLASH.constrain();
     let mut afio = chip.AFIO.constrain(&mut rcc.apb2);
     let clocks = rcc.cfgr.freeze(&mut flash.acr);
-    let _channels = chip.DMA1.split(&mut rcc.ahb);
+    //let _channels = chip.DMA1.split(&mut rcc.ahb);
 
     //  Configuration des GPIOs
     let mut gpiob = chip.GPIOB.split(&mut rcc.apb2);
