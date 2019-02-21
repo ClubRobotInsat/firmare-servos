@@ -2,7 +2,7 @@ use crate::f103::Peripherals;
 use crate::CortexPeripherals;
 
 use crate::f103_hal::delay::Delay;
-use crate::f103_hal::gpio::{gpiob::*, gpioc::*, Alternate, Floating, Input, Output, PushPull};
+use crate::f103_hal::gpio::{gpioa::*, gpiob::* ,gpioc::*, Alternate, Floating, Input, Output, PushPull};
 use crate::f103_hal::prelude::*;
 use crate::f103_hal::serial::{Rx, Serial, Tx};
 use crate::f103_hal::spi::*;
@@ -10,9 +10,9 @@ use crate::f103_hal::spi::*;
 use crate::f103::{SPI1, USART3};
 
 type SpiPins = (
-    PB3<Alternate<PushPull>>,
-    PB4<Input<Floating>>,
-    PB5<Alternate<PushPull>>,
+    PA5<Alternate<PushPull>>,
+    PA6<Input<Floating>>,
+    PA7<Alternate<PushPull>>,
 );
 
 pub struct Robot<T, K, P> {
@@ -37,6 +37,7 @@ pub fn init_peripherals(
     //let _channels = chip.DMA1.split(&mut rcc.ahb);
 
     //  Configuration des GPIOs
+    let mut gpioa = chip.GPIOA.split(&mut rcc.apb2);
     let mut gpiob = chip.GPIOB.split(&mut rcc.apb2);
     let mut gpioc = chip.GPIOC.split(&mut rcc.apb2);
 
@@ -46,9 +47,9 @@ pub fn init_peripherals(
     let mut cs = gpiob.pb13.into_push_pull_output(&mut gpiob.crh);
     cs.set_low();
 
-    let sclk = gpiob.pb3.into_alternate_push_pull(&mut gpiob.crl);
-    let miso = gpiob.pb4.into_floating_input(&mut gpiob.crl);
-    let mosi = gpiob.pb5.into_alternate_push_pull(&mut gpiob.crl);
+    let sclk = gpioa.pa5.into_alternate_push_pull(&mut gpioa.crl);
+    let miso = gpioa.pa6.into_floating_input(&mut gpioa.crl);
+    let mosi = gpioa.pa7.into_alternate_push_pull(&mut gpioa.crl);
 
     let pb10 = gpiob.pb10.into_alternate_push_pull(&mut gpiob.crh);
     let pb11 = gpiob.pb11.into_floating_input(&mut gpiob.crh);

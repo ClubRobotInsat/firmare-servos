@@ -1,7 +1,6 @@
 #![no_main] //  Don't use the Rust standard bootstrap. We will provide our own.
 #![no_std] //  Don't use the Rust standard library. We are building a binary that can run on its own.
 
-#[macro_use]
 extern crate cortex_m; //  Low-level functions for ARM Cortex-M3 processor in STM32 Blue Pill.
 #[macro_use(entry, exception)] //  Import macros from the following crates,
 extern crate cortex_m_rt; //  Startup and runtime functions for ARM Cortex-M3.
@@ -93,7 +92,7 @@ fn main() -> ! {
     let mut robot = init_peripherals(chip, cortex);
     let mut eth = W5500::new(&mut robot.spi_eth, &mut robot.cs);
     init_eth(&mut eth, &mut robot.spi_eth);
-    //init_servos(&mut robot.servo_tx, &mut robot.delay);
+    init_servos(&mut robot.servo_tx, &mut robot.delay);
 
     robot.delay.delay_ms(50u32);
 
