@@ -9,7 +9,6 @@ edition = "2018"
 panic-semihosting = "0.5"
 cortex-m = "0.5"
 cortex-m-rt = {version = "0.6", features = ["device"]}
-cortex-m-semihosting = "0.3"
 embedded-hal = "0.2"
 nb = "0.1"
 numtoa = "0.2"

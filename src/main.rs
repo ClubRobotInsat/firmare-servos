@@ -5,7 +5,6 @@ extern crate cortex_m; //  Low-level functions for ARM Cortex-M3 processor in ST
 #[macro_use(entry, exception)] //  Import macros from the following crates,
 extern crate cortex_m_rt; //  Startup and runtime functions for ARM Cortex-M3.
 extern crate arrayvec;
-extern crate cortex_m_semihosting; //  Debug console functions for ARM Cortex-M3.
 extern crate drs_0x01;
 extern crate embedded_hal;
 extern crate librobot;
@@ -23,7 +22,6 @@ mod robot;
 use cortex_m::asm;
 use cortex_m::Peripherals as CortexPeripherals;
 use cortex_m_rt::ExceptionFrame;
-use cortex_m_semihosting::hio;
 use crate::f103::Peripherals;
 use crate::f103_hal::delay::Delay;
 use crate::f103_hal::prelude::*;
@@ -34,7 +32,6 @@ use embedded_hal::serial::Write as EWrite;
 use embedded_hal::spi::FullDuplex;
 
 // ------ Library imports
-use heapless::consts::U256;
 use w5500::*;
 
 use drs_0x01::addr::WritableRamAddr;
@@ -87,8 +84,11 @@ fn init_eth<E: core::fmt::Debug>(eth: &mut W5500, spi: &mut FullDuplex<u8, Error
 #[entry]
 fn main() -> ! {
     let chip = Peripherals::take().unwrap();
-    let cortex = CortexPeripherals::take().unwrap();
-    let mut _debug_out = hio::hstdout().unwrap();
+    let mut cortex = CortexPeripherals::take().unwrap();
+
+    cortex.DCB.enable_trace();
+    cortex.DWT.enable_cycle_counter();
+    //let mut _debug_out = hio::hstdout().unwrap();
     let mut robot = init_peripherals(chip, cortex);
     let mut eth = W5500::new(&mut robot.spi_eth, &mut robot.cs);
     init_eth(&mut eth, &mut robot.spi_eth);
@@ -96,10 +96,10 @@ fn main() -> ! {
 
     robot.delay.delay_ms(50u32);
 
-    let _buffer = [0; 2048];
+    let mut buffer = [0; 2048];
 
     loop {
-        /*
+
         if let Some((_, _, size)) = eth
             .try_receive_udp(&mut robot.spi_eth, SOCKET_UDP, &mut buffer)
             .unwrap()
@@ -133,7 +133,7 @@ fn main() -> ! {
                 Err(e) => panic!("{:#?}", e),
             }
         }
-        */
+
     }
 }
 

@@ -21,8 +21,9 @@ pub struct Robot<T, K, P> {
     pub servo_rx: Rx<T>,
     pub delay: Delay,
     pub cs: PB13<Output<PushPull>>,
-    pub led_hardfault: PB7<Alternate<PushPull>>,
-    pub led_feedback: PC14<Alternate<PushPull>>,
+    pub led_hardfault: PB7<Output<PushPull>>,
+    pub led_feedback: PC14<Output<PushPull>>,
+    pub led_black_pill: PC13<Output<PushPull>>,
 }
 
 pub fn init_peripherals(
@@ -54,8 +55,9 @@ pub fn init_peripherals(
     let pb10 = gpiob.pb10.into_alternate_push_pull(&mut gpiob.crh);
     let pb11 = gpiob.pb11.into_floating_input(&mut gpiob.crh);
 
-    let mut led_hardfault = gpiob.pb7.into_alternate_push_pull(&mut gpiob.crl);
-    let mut led_feedback = gpioc.pc14.into_alternate_push_pull(&mut gpioc.crh);
+    let mut led_hardfault = gpiob.pb7.into_push_pull_output(&mut gpiob.crl);
+    let mut led_feedback = gpioc.pc14.into_push_pull_output(&mut gpioc.crh);
+    let led_black_pill = gpioc.pc13.into_push_pull_output(&mut gpioc.crh);
     led_hardfault.set_low();
     led_feedback.set_low();
 
@@ -96,5 +98,6 @@ pub fn init_peripherals(
         cs,
         led_hardfault,
         led_feedback,
+        led_black_pill
     }
 }
