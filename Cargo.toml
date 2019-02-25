@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 # --------------- Generic dependencies
-panic-semihosting = "0.5"
+panic-abort = "0.3"
 cortex-m = "0.5"
 cortex-m-rt = {version = "0.6", features = ["device"]}
 embedded-hal = "0.2"

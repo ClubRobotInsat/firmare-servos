@@ -2,7 +2,9 @@ use crate::f103::Peripherals;
 use crate::CortexPeripherals;
 
 use crate::f103_hal::delay::Delay;
-use crate::f103_hal::gpio::{gpioa::*, gpiob::* ,gpioc::*, Alternate, Floating, Input, Output, PushPull};
+use crate::f103_hal::gpio::{
+    gpioa::*, gpiob::*, gpioc::*, Alternate, Floating, Input, Output, PushPull,
+};
 use crate::f103_hal::prelude::*;
 use crate::f103_hal::serial::{Rx, Serial, Tx};
 use crate::f103_hal::spi::*;
@@ -98,6 +100,6 @@ pub fn init_peripherals(
         cs,
         led_hardfault,
         led_feedback,
-        led_black_pill
+        led_black_pill,
     }
 }

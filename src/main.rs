@@ -1,31 +1,21 @@
 #![no_main] //  Don't use the Rust standard bootstrap. We will provide our own.
 #![no_std] //  Don't use the Rust standard library. We are building a binary that can run on its own.
 
-extern crate cortex_m; //  Low-level functions for ARM Cortex-M3 processor in STM32 Blue Pill.
-#[macro_use(entry, exception)] //  Import macros from the following crates,
-extern crate cortex_m_rt; //  Startup and runtime functions for ARM Cortex-M3.
-extern crate arrayvec;
-extern crate drs_0x01;
-extern crate embedded_hal;
-extern crate librobot;
-#[macro_use]
-extern crate nb;
-extern crate heapless;
-extern crate numtoa;
-extern crate panic_semihosting; //  Panic reporting functions, which transmit to the debug console.
-extern crate stm32f1xx_hal as f103_hal; //  Hardware Abstraction Layer (HAL) for STM32 Blue Pill.
-extern crate w5500;
+use stm32f1xx_hal as f103_hal;
 
 mod robot;
 
+use cortex_m_rt::{entry, exception};
+use nb::block;
+
 // ------ Cortex | F103 imports
-use cortex_m::asm;
-use cortex_m::Peripherals as CortexPeripherals;
-use cortex_m_rt::ExceptionFrame;
 use crate::f103::Peripherals;
 use crate::f103_hal::delay::Delay;
 use crate::f103_hal::prelude::*;
 use crate::f103_hal::stm32 as f103;
+use cortex_m::asm;
+use cortex_m::Peripherals as CortexPeripherals;
+use cortex_m_rt::ExceptionFrame;
 
 // ------ Embedded HAL imports
 use embedded_hal::serial::Write as EWrite;
@@ -33,6 +23,9 @@ use embedded_hal::spi::FullDuplex;
 
 // ------ Library imports
 use w5500::*;
+
+#[allow(unused_imports)]
+use panic_abort;
 
 use drs_0x01::addr::WritableRamAddr;
 use drs_0x01::Servo as HServo;
@@ -80,7 +73,6 @@ fn init_eth<E: core::fmt::Debug>(eth: &mut W5500, spi: &mut FullDuplex<u8, Error
         .expect("Failed to listen to port 51");
 }
 
-
 #[entry]
 fn main() -> ! {
     let chip = Peripherals::take().unwrap();
@@ -99,7 +91,6 @@ fn main() -> ! {
     let mut buffer = [0; 2048];
 
     loop {
-
         if let Some((_, _, size)) = eth
             .try_receive_udp(&mut robot.spi_eth, SOCKET_UDP, &mut buffer)
             .unwrap()
@@ -107,7 +98,6 @@ fn main() -> ! {
             let _id = buffer[0];
             match Servo::from_json_slice(&buffer[1..size]) {
                 Ok(servo) => {
-                    //write!(debug_out, "{:?}", servo.to_string::<U256>().unwrap()).unwrap();
                     let s = HServo::new(servo.id);
                     let msg = match servo.control {
                         Control::Position => s.set_position(servo.data),
@@ -133,7 +123,6 @@ fn main() -> ! {
                 Err(e) => panic!("{:#?}", e),
             }
         }
-
     }
 }
 
