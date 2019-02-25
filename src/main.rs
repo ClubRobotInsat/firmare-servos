@@ -5,36 +5,25 @@ use stm32f1xx_hal as f103_hal;
 
 mod robot;
 
-use cortex_m_rt::{entry, exception};
-use nb::block;
-
-// ------ Cortex | F103 imports
 use crate::f103::Peripherals;
 use crate::f103_hal::delay::Delay;
 use crate::f103_hal::prelude::*;
 use crate::f103_hal::stm32 as f103;
+use crate::robot::init_peripherals;
 use cortex_m::asm;
 use cortex_m::Peripherals as CortexPeripherals;
 use cortex_m_rt::ExceptionFrame;
-
-// ------ Embedded HAL imports
-use embedded_hal::serial::Write as EWrite;
-
-// ------ Library imports
-use w5500::*;
-
-#[allow(unused_imports)]
-use panic_abort;
-
+use cortex_m_rt::{entry, exception};
 use drs_0x01::addr::WritableRamAddr;
 use drs_0x01::Servo as HServo;
-
+use embedded_hal::serial::Write as EWrite;
 use librobot::transmission::eth::{init_eth, SOCKET_UDP};
 use librobot::transmission::servo::{Control, Servo};
 use librobot::transmission::Jsonizable;
-
-// ------ Local imports
-use crate::robot::init_peripherals;
+use nb::block;
+#[allow(unused_imports)]
+use panic_abort;
+use w5500::*;
 
 fn init_servos(connection: &mut impl EWrite<u8>, delay: &mut Delay) {
     let servo = HServo::new(0xFE);
@@ -57,11 +46,7 @@ fn init_servos(connection: &mut impl EWrite<u8>, delay: &mut Delay) {
 #[entry]
 fn main() -> ! {
     let chip = Peripherals::take().unwrap();
-    let mut cortex = CortexPeripherals::take().unwrap();
-
-    cortex.DCB.enable_trace();
-    cortex.DWT.enable_cycle_counter();
-    //let mut _debug_out = hio::hstdout().unwrap();
+    let cortex = CortexPeripherals::take().unwrap();
     let mut robot = init_peripherals(chip, cortex);
     let mut eth = W5500::new(&mut robot.spi_eth, &mut robot.cs);
     init_eth(

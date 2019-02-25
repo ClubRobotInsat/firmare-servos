@@ -30,7 +30,7 @@ pub struct Robot<T, K, P> {
 
 pub fn init_peripherals(
     chip: Peripherals,
-    cortex: CortexPeripherals,
+    mut cortex: CortexPeripherals,
 ) -> Robot<USART3, SPI1, SpiPins> {
     //  Get the clocks from the STM32 Reset and Clock Control (RCC) and freeze the Flash Access Control Register (ACR).
     let mut rcc = chip.RCC.constrain();
@@ -38,6 +38,9 @@ pub fn init_peripherals(
     let mut afio = chip.AFIO.constrain(&mut rcc.apb2);
     let clocks = rcc.cfgr.freeze(&mut flash.acr);
     //let _channels = chip.DMA1.split(&mut rcc.ahb);
+
+    cortex.DCB.enable_trace();
+    cortex.DWT.enable_cycle_counter();
 
     //  Configuration des GPIOs
     let mut gpioa = chip.GPIOA.split(&mut rcc.apb2);
