@@ -19,7 +19,6 @@ use cortex_m_rt::ExceptionFrame;
 
 // ------ Embedded HAL imports
 use embedded_hal::serial::Write as EWrite;
-use embedded_hal::spi::FullDuplex;
 
 // ------ Library imports
 use w5500::*;
@@ -30,12 +29,12 @@ use panic_abort;
 use drs_0x01::addr::WritableRamAddr;
 use drs_0x01::Servo as HServo;
 
+use librobot::transmission::eth::{init_eth, SOCKET_UDP};
 use librobot::transmission::servo::{Control, Servo};
+use librobot::transmission::Jsonizable;
 
 // ------ Local imports
 use crate::robot::init_peripherals;
-
-const SOCKET_UDP: Socket = Socket::Socket0;
 
 fn init_servos(connection: &mut impl EWrite<u8>, delay: &mut Delay) {
     let servo = HServo::new(0xFE);
@@ -55,24 +54,6 @@ fn init_servos(connection: &mut impl EWrite<u8>, delay: &mut Delay) {
     }
 }
 
-fn init_eth<E: core::fmt::Debug>(eth: &mut W5500, spi: &mut FullDuplex<u8, Error = E>) {
-    //eth.set_mode(spi,false, false, false, true).unwrap();
-    // using a 'locally administered' MAC address
-    eth.init(spi).expect("Failed to initialize w5500");
-    eth.set_mode(spi, false, false, false, true).unwrap();
-    eth.set_mac(spi, &MacAddress::new(0x02, 0x01, 0x02, 0x03, 0x04, 0x05))
-        .unwrap();
-    eth.set_ip(spi, &IpAddress::new(192, 168, 0, 222)).unwrap();
-    eth.set_subnet(spi, &IpAddress::new(255, 255, 255, 0))
-        .unwrap();
-    eth.set_gateway(spi, &IpAddress::new(192, 168, 0, 254))
-        .unwrap();
-    eth.reset_interrupt(spi, SOCKET_UDP, Interrupt::Received)
-        .expect("Failed ot reset interrupts for W5500");
-    eth.listen_udp(spi, SOCKET_UDP, 51)
-        .expect("Failed to listen to port 51");
-}
-
 #[entry]
 fn main() -> ! {
     let chip = Peripherals::take().unwrap();
@@ -83,7 +64,12 @@ fn main() -> ! {
     //let mut _debug_out = hio::hstdout().unwrap();
     let mut robot = init_peripherals(chip, cortex);
     let mut eth = W5500::new(&mut robot.spi_eth, &mut robot.cs);
-    init_eth(&mut eth, &mut robot.spi_eth);
+    init_eth(
+        &mut eth,
+        &mut robot.spi_eth,
+        &MacAddress::new(0x02, 0x01, 0x02, 0x03, 0x04, 0x05),
+        &IpAddress::new(255, 255, 255, 0),
+    );
     init_servos(&mut robot.servo_tx, &mut robot.delay);
 
     robot.delay.delay_ms(50u32);
