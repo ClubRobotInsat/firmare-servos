@@ -37,10 +37,11 @@ fn init_servos(connection: &mut impl EWrite<u8>, delay: &mut Delay) {
         let _ = block!(connection.write(b));
     }
     delay.delay_ms(250u8);
+    /*
     let message = servo.ram_write(WritableRamAddr::AckPolicy(2));
     for b in message {
         let _ = block!(connection.write(b));
-    }
+    }*/
 }
 
 #[entry]
@@ -48,12 +49,13 @@ fn main() -> ! {
     let chip = Peripherals::take().unwrap();
     let cortex = CortexPeripherals::take().unwrap();
     let mut robot = init_peripherals(chip, cortex);
+
     let mut eth = W5500::new(&mut robot.spi_eth, &mut robot.cs);
     init_eth(
         &mut eth,
         &mut robot.spi_eth,
         &MacAddress::new(0x02, 0x01, 0x02, 0x03, 0x04, 0x05),
-        &IpAddress::new(255, 255, 255, 0),
+        &IpAddress::new(192, 168, 1, 2),
     );
     init_servos(&mut robot.servo_tx, &mut robot.delay);
 

@@ -22,7 +22,7 @@ librobot = {git="https://github.com/ClubRobotInsat/librobot"}
 
 [dependencies.stm32f1xx-hal]
 git = "https://github.com/stm32-rs/stm32f1xx-hal"
- features = ["rt","stm32f103"]
+features = ["rt","stm32f103"]
 
 [profile.release]
 codegen-units = 1

@@ -1,6 +1,6 @@
+use crate::f103;
 use crate::f103::Peripherals;
-use crate::CortexPeripherals;
-
+use crate::f103::{interrupt, SPI1, USART3};
 use crate::f103_hal::delay::Delay;
 use crate::f103_hal::gpio::{
     gpioa::*, gpiob::*, gpioc::*, Alternate, Floating, Input, Output, PushPull,
@@ -8,14 +8,18 @@ use crate::f103_hal::gpio::{
 use crate::f103_hal::prelude::*;
 use crate::f103_hal::serial::{Rx, Serial, Tx};
 use crate::f103_hal::spi::*;
-
-use crate::f103::{SPI1, USART3};
+use crate::f103_hal::timer::{Event, Timer};
+use crate::CortexPeripherals;
+use cortex_m::asm;
+use stm32f1xx_hal::device::Interrupt::TIM3;
 
 type SpiPins = (
     PA5<Alternate<PushPull>>,
     PA6<Input<Floating>>,
     PA7<Alternate<PushPull>>,
 );
+
+static mut LED_BLINK: Option<PC13<Output<PushPull>>> = None;
 
 pub struct Robot<T, K, P> {
     pub spi_eth: Spi<K, P>,
@@ -25,7 +29,6 @@ pub struct Robot<T, K, P> {
     pub cs: PB13<Output<PushPull>>,
     pub led_hardfault: PB7<Output<PushPull>>,
     pub led_feedback: PC14<Output<PushPull>>,
-    pub led_black_pill: PC13<Output<PushPull>>,
 }
 
 pub fn init_peripherals(
@@ -36,7 +39,14 @@ pub fn init_peripherals(
     let mut rcc = chip.RCC.constrain();
     let mut flash = chip.FLASH.constrain();
     let mut afio = chip.AFIO.constrain(&mut rcc.apb2);
-    let clocks = rcc.cfgr.freeze(&mut flash.acr);
+    let mut nvic = cortex.NVIC;
+    let clocks = rcc
+        .cfgr
+        .use_hse(8.mhz())
+        .sysclk(72.mhz())
+        .pclk1(36.mhz())
+        .pclk2(72.mhz())
+        .freeze(&mut flash.acr);
     //let _channels = chip.DMA1.split(&mut rcc.ahb);
 
     cortex.DCB.enable_trace();
@@ -63,6 +73,10 @@ pub fn init_peripherals(
     let mut led_hardfault = gpiob.pb7.into_push_pull_output(&mut gpiob.crl);
     let mut led_feedback = gpioc.pc14.into_push_pull_output(&mut gpioc.crh);
     let led_black_pill = gpioc.pc13.into_push_pull_output(&mut gpioc.crh);
+
+    unsafe {
+        LED_BLINK = Some(led_black_pill);
+    }
     led_hardfault.set_low();
     led_feedback.set_low();
 
@@ -92,6 +106,11 @@ pub fn init_peripherals(
 
     let (servo_tx, servo_rx) = servo.split();
 
+    nvic.enable(TIM3);
+
+    let mut t = Timer::tim3(chip.TIM3, 5.hz(), clocks, &mut rcc.apb1);
+    t.listen(Event::Update);
+
     //  Create a delay timer from the RCC clocks.
     let delay = Delay::new(cortex.SYST, clocks);
 
@@ -103,6 +122,19 @@ pub fn init_peripherals(
         cs,
         led_hardfault,
         led_feedback,
-        led_black_pill,
+    }
+}
+
+#[interrupt]
+fn TIM3() {
+    unsafe {
+        if let Some(led) = &mut LED_BLINK {
+            if led.is_set_high() {
+                led.set_low()
+            } else {
+                led.set_high();
+            }
+        }
+        (*f103::TIM3::ptr()).sr.write(|w| w.uif().clear_bit());
     }
 }
