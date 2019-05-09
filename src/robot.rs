@@ -127,14 +127,14 @@ pub fn init_peripherals(
 
 #[interrupt]
 fn TIM3() {
+    static mut TOOGLE: bool = false;
     unsafe {
-        if let Some(led) = &mut LED_BLINK {
-            if led.is_set_high() {
-                led.set_low()
-            } else {
-                led.set_high();
-            }
-        }
         (*f103::TIM3::ptr()).sr.write(|w| w.uif().clear_bit());
+        if *TOOGLE {
+            (*f103::GPIOC::ptr()).bsrr.write(|w| w.br13().set_bit());
+        } else {
+            (*f103::GPIOC::ptr()).bsrr.write(|w| w.bs13().set_bit());
+        }
+        *TOOGLE = !(*TOOGLE);
     }
 }

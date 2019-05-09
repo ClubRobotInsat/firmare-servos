@@ -18,6 +18,7 @@ use drs_0x01::addr::WritableRamAddr;
 use drs_0x01::Servo as HServo;
 use embedded_hal::serial::Write as EWrite;
 use librobot::transmission::eth::{init_eth, SOCKET_UDP};
+use librobot::transmission::id::*;
 use librobot::transmission::servo::{Control, Servo};
 use librobot::transmission::Jsonizable;
 use nb::block;
@@ -54,8 +55,8 @@ fn main() -> ! {
     init_eth(
         &mut eth,
         &mut robot.spi_eth,
-        &MacAddress::new(0x02, 0x01, 0x02, 0x03, 0x04, 0x05),
-        &IpAddress::new(192, 168, 1, 2),
+        &MacAddress::new(0x02, 0x01, 0x02, 0x03, 0x04, ID_SERVO as u8),
+        &IpAddress::new(192, 168, 1, ID_SERVO as u8),
     );
     init_servos(&mut robot.servo_tx, &mut robot.delay);
 
