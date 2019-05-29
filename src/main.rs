@@ -52,15 +52,11 @@ fn main() -> ! {
     let mut robot = init_peripherals(chip, cortex);
 
     let mut eth = W5500::new(&mut robot.spi_eth, &mut robot.cs);
-    init_eth(
-        &mut eth,
-        &mut robot.spi_eth,
-        &MacAddress::new(0x02, 0x01, 0x02, 0x03, 0x04, ID_SERVO as u8),
-        &IpAddress::new(192, 168, 1, ID_SERVO as u8),
-    );
+    init_eth(&mut eth, &mut robot.spi_eth, ID_SERVO as u8, ID_SERVO as u8);
     init_servos(&mut robot.servo_tx, &mut robot.delay);
 
     robot.delay.delay_ms(50u32);
+    robot.led_feedback.set_high();
 
     let mut buffer = [0; 2048];
 
