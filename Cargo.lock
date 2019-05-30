@@ -100,6 +100,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "cortex-m-semihosting"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "cortex-m 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "cty"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -196,9 +204,13 @@ version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "panic-abort"
-version = "0.3.1"
+name = "panic-semihosting"
+version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "cortex-m 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "cortex-m-semihosting 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "proc-macro2"
@@ -313,7 +325,7 @@ dependencies = [
  "librobot 0.2.0 (git+https://github.com/ClubRobotInsat/librobot)",
  "nb 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "numtoa 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "panic-abort 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "panic-semihosting 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "stm32f1xx-hal 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "w5500 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -413,6 +425,7 @@ dependencies = [
 "checksum cortex-m 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)" = "f3c18719fdc57db65668bfc977db9a0fa1a41d718c5d9cd4f652c9d4b0e0956a"
 "checksum cortex-m-rt 0.6.8 (registry+https://github.com/rust-lang/crates.io-index)" = "7e1ccc9052352415ec4e3f762f4541098d012016f9354a1a5b2dede39b67f426"
 "checksum cortex-m-rt-macros 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "d7ae692573e0acccb1579fef1abf5a5bf1d2f3f0149a22b16870ec9309aee25f"
+"checksum cortex-m-semihosting 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "165f3f86f4d1031351a6c9dc8d5a3f8fae2050f9dd6ef925e3d675c232cc0e46"
 "checksum cty 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "c4e1d41c471573612df00397113557693b5bf5909666a8acb253930612b93312"
 "checksum drs-0x01 0.3.0 (git+https://github.com/gbip/drs_0x01_driver)" = "<none>"
 "checksum embedded-hal 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "9880e55238830314d41d88f1ac7a819d495799c3cc3bc392cc172bab26428c33"
@@ -425,7 +438,7 @@ dependencies = [
 "checksum nb 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "b1411551beb3c11dedfb0a90a0fa256b47d28b9ec2cdff34c25a2fa59e45dbdc"
 "checksum nodrop 0.1.13 (registry+https://github.com/rust-lang/crates.io-index)" = "2f9667ddcc6cc8a43afc9b7917599d7216aa09c463919ea32c59ed6cac8bc945"
 "checksum numtoa 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "e521b6adefa0b2c1fa5d2abdf9a5216288686fe6146249215d884c0e5ab320b0"
-"checksum panic-abort 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "2c14a66511ed17b6a8b4256b868d7fd207836d891db15eea5195dbcaf87e630f"
+"checksum panic-semihosting 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)" = "97cfb37c1d3b5f0cc18bf14485018cccd13bdd24f7b5bfd456c1d8760afef824"
 "checksum proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)" = "cf3d2011ab5c909338f7887f4fc896d35932e29146c12c8d01da6b22a80ba759"
 "checksum qei 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "506e0f84fb07e858d1bb9bdd33a66c5347f15805025e782edbac1848d1238f3c"
 "checksum quote 0.6.12 (registry+https://github.com/rust-lang/crates.io-index)" = "faf4799c5d274f3868a4aae320a0a182cbd2baee377b378f080e16a23e9d80db"

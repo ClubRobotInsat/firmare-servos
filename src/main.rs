@@ -17,13 +17,13 @@ use cortex_m_rt::{entry, exception};
 use drs_0x01::addr::WritableRamAddr;
 use drs_0x01::Servo as HServo;
 use embedded_hal::serial::Write as EWrite;
-use librobot::transmission::eth::{init_eth, SOCKET_UDP};
+use librobot::transmission::eth::{init_eth, SOCKET_UDP, listen_on};
 use librobot::transmission::id::*;
 use librobot::transmission::servo::{Control, Servo};
 use librobot::transmission::Jsonizable;
 use nb::block;
 #[allow(unused_imports)]
-use panic_abort;
+use panic_semihosting;
 use w5500::*;
 
 fn init_servos(connection: &mut impl EWrite<u8>, delay: &mut Delay) {
@@ -53,6 +53,7 @@ fn main() -> ! {
 
     let mut eth = W5500::new(&mut robot.spi_eth, &mut robot.cs);
     init_eth(&mut eth, &mut robot.spi_eth, ID_SERVO as u8, ID_SERVO as u8);
+    listen_on(&mut eth, &mut robot.spi_eth,ID_SERVO + ELEC_LISTENING_PORT, SOCKET_UDP);
     init_servos(&mut robot.servo_tx, &mut robot.delay);
 
     robot.delay.delay_ms(50u32);
@@ -65,8 +66,7 @@ fn main() -> ! {
             .try_receive_udp(&mut robot.spi_eth, SOCKET_UDP, &mut buffer)
             .unwrap()
         {
-            let _id = buffer[0];
-            match Servo::from_json_slice(&buffer[1..size]) {
+            match Servo::from_json_slice(&buffer[0..size]) {
                 Ok(servo) => {
                     let s = HServo::new(servo.id);
                     let msg = match servo.control {
@@ -90,7 +90,8 @@ fn main() -> ! {
                         );
                     }
                 }
-                Err(e) => panic!("{:#?}", e),
+                Err(e) => {
+                    panic!("Received{:#?}", e);},
             }
         }
     }
