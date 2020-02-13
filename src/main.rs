@@ -110,3 +110,7 @@ fn DefaultHandler(irqn: i16) {
     asm::bkpt();
     panic!("Unhandled exception (IRQn = {})", irqn);
 }
+/*
+fn Allumer_led(&mut led_feedback){
+    led_feedback.set_high();
+}*/

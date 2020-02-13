@@ -17,7 +17,8 @@ check_gdb() {
 }
 
 check_gdb arm-none-eabi-gdb
-check_gdb _others_gdb_
+#check_gdb _others_gdb_
+check_gdb gdb-multiarch
 
 echo -e "${Red}Impossible to launch a GDB session.${End}"
 

@@ -18,7 +18,7 @@ heapless = "0.4.0"
 
 # Utilitaries dependencies
 arrayvec = {version="0.4", default-features=false}
-librobot = {git="https://github.com/ClubRobotInsat/librobot", default-features=false}
+librobot = {git="https://github.com/ClubRobotInsat/librobot", default-features=false, branch="dev-new-pid"}
 
 [dependencies.stm32f1xx-hal]
 features = ["rt","stm32f103"]
